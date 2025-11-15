@@ -3,17 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 
 interface UseRadioStationsOptions {
   limit?: number;
+  countryCode?: string;
 }
 
-const BASE_URL = "http://all.api.radio-browser.info/json/stations/bycountry/india";
+const BASE_URL = "http://all.api.radio-browser.info/json/stations/bycountry";
 
 const useRadioStations = (options: UseRadioStationsOptions = {}) => {
-  const { limit = 10 } = options;
+  const { limit = 10, countryCode } = options;
 
   return useQuery<RadioStation[], Error, RadioStation[]>({
-    queryKey: ["radio-station", limit],
+    queryKey: ["radio-station", limit, countryCode],
     queryFn: async () => {
-      const url = `${BASE_URL}?limit=${limit}`;
+      if (!countryCode) {
+        return [];
+      }
+      const url = `${BASE_URL}/${countryCode}?limit=${limit}`;
 
       const response = await fetch(url, {
         method: "POST",
@@ -25,6 +29,7 @@ const useRadioStations = (options: UseRadioStationsOptions = {}) => {
 
       return response.json();
     },
+    enabled: !!countryCode,
   });
 };
 
