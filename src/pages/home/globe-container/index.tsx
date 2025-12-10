@@ -1,30 +1,20 @@
 import { Box } from "@chakra-ui/react";
 import { useCallback, useRef } from "react";
 import Globe, { type GlobeMethods } from "react-globe.gl";
-import * as turf from "@turf/turf";
-import countriesGeoJSON from "@/assets/world.geo.json";
-import type { GeoJsonFeatureCollection } from "@/types/geo";
+import useGeoJson from "@/hooks/useGeoJson";
 
 const GlobeContainer = () => {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
+  const { getCountryFromCoordinates } = useGeoJson();
 
-  const getCountry = (lat: number, lng: number, countriesGeoJSON: GeoJsonFeatureCollection) => {
-    const pt = turf.point([lng, lat]);
+  const emitArc = useCallback(
+    (props: { lat: number; lng: number }) => {
+      const country = getCountryFromCoordinates(props.lat, props.lng);
 
-    for (const feature of countriesGeoJSON.features) {
-      if (turf.booleanPointInPolygon(pt, feature as Parameters<typeof turf.booleanPointInPolygon>[1])) {
-        return feature.properties;
-      }
-    }
-
-    return null;
-  };
-
-  const emitArc = useCallback((props: { lat: number; lng: number }) => {
-    const country = getCountry(props.lat, props.lng, countriesGeoJSON as unknown as GeoJsonFeatureCollection);
-
-    console.log({ country });
-  }, []);
+      console.log({ country });
+    },
+    [getCountryFromCoordinates],
+  );
 
   return (
     <Box position="relative">
